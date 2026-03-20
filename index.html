@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公共数据集 · 示例门户</title>
+    <!-- Font Awesome 5 (免费图标库) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 2rem 2rem 1.5rem;
+        }
+
+        /* 头部区域 */
+        .dataset-header {
+            margin-bottom: 2.5rem;
+            border-bottom: 2px solid #eef2f6;
+            padding-bottom: 1.5rem;
+        }
+
+        .dataset-title {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .dataset-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(145deg, #0f2b4d, #1e4a6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .badge {
+            background-color: #e6f0f9;
+            color: #1e4a6b;
+            padding: 0.25rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .badge i {
+            font-size: 0.8rem;
+            color: #2c6b9b;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.8rem 3rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .meta-icon {
+            width: 42px;
+            height: 42px;
+            background: #eef6ff;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+            font-size: 1.3rem;
+        }
+
+        .meta-text h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .meta-text p {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .meta-text small {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .description {
+            background: #f1f5f9;
+            padding: 1.5rem 2rem;
+            border-radius: 28px;
+            margin: 2rem 0 1.5rem;
+            font-size: 1.1rem;
+            border-left: 6px solid #3b82f6;
+        }
+
+        /* 文件下载卡片区 */
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 650;
+            margin: 2.5rem 0 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #2563eb;
+            background: #e2e8f0;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .file-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 1.2rem 1.2rem 1rem 1.2rem;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+        }
+
+        .file-card:hover {
+            border-color: #a5c9ff;
+            box-shadow: 0 12px 20px -12px rgba(37,99,235,0.3);
+            transform: translateY(-3px);
+        }
+
+        .file-type {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .file-type i {
+            font-size: 2rem;
+        }
+
+        .file-size {
+            background: #eef2f6;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .file-name {
+            font-weight: 650;
+            font-size: 1.2rem;
+            margin: 5px 0 5px;
+            word-break: break-word;
+        }
+
+        .file-desc {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .download-btn {
+            background: #f0f4fe;
+            color: #1e4a7a;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+            border: 1px solid transparent;
+        }
+
+        .download-btn:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .download-btn:hover i {
+            color: white;
+        }
+
+        /* 数据预览表格 */
+        .preview-table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #e9eef2;
+            margin: 1.8rem 0;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 600px;
+        }
+
+        th {
+            background: #f1f6fa;
+            font-weight: 600;
+            padding: 1rem 1rem;
+            text-align: left;
+            color: #1e293b;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid #dee7ef;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #fafdff;
+        }
+
+        /* 字段描述表格 */
+        .schema-table {
+            background: #f8fafc;
+            border-radius: 18px;
+            border: 1px solid #dde3ea;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .schema-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 3fr;
+            border-bottom: 1px solid #dde3ea;
+        }
+
+        .schema-row.header {
+            background: #e6edf5;
+            font-weight: 600;
+            color: #0b3954;
+        }
+
+        .schema-cell {
+            padding: 0.9rem 1.2rem;
+            word-break: break-word;
+        }
+
+        /* 引用区块 */
+        .citation-box {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 1.6rem 2rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #cfdeed;
+            margin: 1.8rem 0 2.2rem;
+            position: relative;
+        }
+
+        .citation-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: none;
+            border: none;
+            color: #1e293b;
+        }
+
+        .license {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* 页脚 */
+        .footer {
+            margin-top: 3.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e9eef2;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* GitHub 角标 (小型) */
+        .github-corner {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #0f172a;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .github-corner i {
+            font-size: 1.1rem;
+        }
+
+        .github-corner:hover {
+            background: #2563eb;
+        }
+
+        /* 响应式小修 */
+        @media (max-width: 640px) {
+            .container { padding: 1.5rem 1rem; }
+            .dataset-title h1 { font-size: 1.8rem; }
+            .meta-grid { gap: 1.2rem; }
+            .schema-row { grid-template-columns: 1fr 1fr 2fr; }
+        }
+        /* 图标颜色微调 */
+        .fa-file-csv { color: #27a745; }
+        .fa-file-json { color: #f7b731; }
+        .fa-file-archive { color: #b85c5c; }
+        .fa-file-pdf { color: #e05a5a; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部信息 (请替换为您自己的数据集名称、描述等) -->
+        <div class="dataset-header">
+            <div class="dataset-title">
+                <h1>🌍 全球地表气温异常数据集</h1>
+                <span class="badge"><i class="fas fa-tag"></i> v2.1 · 2025-03</span>
+                <span class="badge"><i class="fas fa-database"></i> 公开 · CC BY 4.0</span>
+            </div>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fas fa-table"></i></span>
+                    <div class="meta-text">
+                        <h4>记录数</h4>
+                        <p>12,345 <small>行</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fas fa-columns"></i></span>
+                    <div class="meta-text">
+                        <h4>字段/特征</h4>
+                        <p>9 <small>列</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fas fa-weight-hanging"></i></span>
+                    <div class="meta-text">
+                        <h4>总大小</h4>
+                        <p>28.4 <small>MB</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fas fa-calendar-alt"></i></span>
+                    <div class="meta-text">
+                        <h4>时间范围</h4>
+                        <p>1850–2024</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据集简介（替换为您自己的描述） -->
+            <div class="description">
+                <i class="fas fa-quote-left" style="color:#2563eb; opacity:0.7; margin-right:8px;"></i>
+                该数据集整合了来自气象站、船舶和卫星的全球地表气温异常记录。经过均一化校正，适用于气候变化研究、趋势分析及机器学习基准测试。包含原始月均值及季节滑动平均。
+            </div>
+        </div>
+
+        <!-- 文件下载区块（请替换文件名、大小、描述，并更新下载链接） -->
+        <div class="section-title">
+            <i class="fas fa-download"></i> 数据集文件
+        </div>
+        <div class="file-grid">
+            <!-- CSV 文件卡片（替换 href 为您的实际 raw 链接） -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fas fa-file-csv"></i>
+                    <span class="file-size">CSV · 12.2 MB</span>
+                </div>
+                <div class="file-name">global_temperature_anomaly.csv</div>
+                <div class="file-desc">主数据表，包含年月、异常值、低ess、不确定度等9列。UTF-8编码。</div>
+                <a class="download-btn" href="#" target="_blank" onclick="alert('请将 href 替换为您的实际文件链接 (例如 raw.githubusercontent.com 链接)')">
+                    <i class="fas fa-download"></i> 下载 CSV
+                </a>
+            </div>
+            <!-- JSON 卡片 -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fas fa-file-json"></i>
+                    <span class="file-size">JSON · 16.1 MB</span>
+                </div>
+                <div class="file-name">temperature_anomaly.json</div>
+                <div class="file-desc">面向程序使用的嵌套JSON格式，每条记录包含完整元数据。</div>
+                <a class="download-btn" href="#" target="_blank" onclick="alert('请将 href 替换为您的实际文件链接')">
+                    <i class="fas fa-download"></i> 下载 JSON
+                </a>
+            </div>
+            <!-- 文档/README 卡片 -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="file-size">PDF · 0.8 MB</span>
+                </div>
+                <div class="file-name">data_documentation.pdf</div>
+                <div class="file-desc">数据说明、变量定义、预处理步骤及引用指引。</div>
+                <a class="download-btn" href="#" target="_blank" onclick="alert('请将 href 替换为您的实际文件链接')">
+                    <i class="fas fa-download"></i> 下载 PDF
+                </a>
+            </div>
+            <!-- 额外压缩包（示例） -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fas fa-file-archive"></i>
+                    <span class="file-size">ZIP · 24.5 MB</span>
+                </div>
+                <div class="file-name">full_dataset_archive.zip</div>
+                <div class="file-desc">包含原始CSV/JSON及辅助脚本 (Python/R) 的压缩包。</div>
+                <a class="download-btn" href="#" target="_blank" onclick="alert('请将 href 替换为您的实际文件链接')">
+                    <i class="fas fa-download"></i> 下载 ZIP
+                </a>
+            </div>
+        </div>
+
+        <!-- 数据预览（请根据实际数据修改示例行） -->
+        <div class="section-title">
+            <i class="fas fa-eye"></i> 数据预览 (前5行)
+        </div>
+        <div class="preview-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>year</th>
+                        <th>month</th>
+                        <th>anomaly_degC</th>
+                        <th>lower_bound</th>
+                        <th>upper_bound</th>
+                        <th>station_count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1850</td><td>1</td><td>-0.68</td><td>-0.92</td><td>-0.45</td><td>124</td></tr>
+                    <tr><td>1850</td><td>2</td><td>-0.71</td><td>-0.94</td><td>-0.49</td><td>131</td></tr>
+                    <tr><td>1850</td><td>3</td><td>-0.59</td><td>-0.82</td><td>-0.37</td><td>147</td></tr>
+                    <tr><td>1850</td><td>4</td><td>-0.42</td><td>-0.66</td><td>-0.19</td><td>152</td></tr>
+                    <tr><td>1850</td><td>5</td><td>-0.33</td><td>-0.58</td><td>-0.09</td><td>158</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 字段描述 (数据字典) 按需修改 -->
+        <div class="section-title">
+            <i class="fas fa-list-ul"></i> 字段说明
+        </div>
+        <div class="schema-table">
+            <div class="schema-row header">
+                <div class="schema-cell">字段名</div>
+                <div class="schema-cell">类型</div>
+                <div class="schema-cell">描述</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">year</div><div class="schema-cell">整数</div><div class="schema-cell">观测年份 (1850-2024)</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">month</div><div class="schema-cell">整数</div><div class="schema-cell">月份 (1-12)</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">anomaly_degC</div><div class="schema-cell">浮点数</div><div class="schema-cell">相对于1850-1900平均的气温异常值 (单位: °C)</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">lower_bound / upper_bound</div><div class="schema-cell">浮点数</div><div class="schema-cell">95%置信区间下/上限</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">station_count</div><div class="schema-cell">整数</div><div class="schema-cell">用于计算该月异常值的站点数量</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">region</div><div class="schema-cell">字符串</div><div class="schema-cell">区域标识 (全球/北半球/南半球/热带) ，本文件统一为"Global"</div>
+            </div>
+        </div>
+
+        <!-- 引用信息 (修改为您希望引用的方式) -->
+        <div class="section-title">
+            <i class="fas fa-quote-right"></i> 引用该数据集
+        </div>
+        <div class="citation-box">
+            <pre>@misc{globaltemp2025,
+  author = {您的姓名/组织名},
+  title = {全球地表气温异常数据集 (1850–2024)},
+  year = {2025},
+  version = {2.1},
+  publisher = {GitHub},
+  url = {https://github.com/您的用户名/您的仓库}
+}</pre>
+        </div>
+
+        <!-- 许可和作者 -->
+        <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between;">
+            <div>
+                <span class="license"><i class="fas fa-balance-scale"></i> 知识共享 署名 4.0 国际 (CC BY 4.0)</span>
+                <p style="margin-top: 12px; color: #2c3e50;">
+                    <i class="fas fa-user" style="margin-right: 8px; color:#2563eb;"></i> 维护者：您的姓名/团队 · 
+                    <i class="fas fa-envelope" style="margin-left: 12px; color:#2563eb;"></i> 联系邮箱：your.email@example.com
+                </p>
+            </div>
+            <!-- 直接链接到 GitHub 仓库的图标按钮 (请替换用户名/仓库) -->
+            <a class="github-corner" href="https://github.com/您的用户名/您的仓库" target="_blank">
+                <i class="fab fa-github"></i>  GitHub 仓库
+            </a>
+        </div>
+
+        <!-- 页脚区 (更新日期 / 说明) -->
+        <div class="footer">
+            <span><i class="far fa-clock"></i> 数据集最后更新: 2025年03月20日</span>
+            <span>
+                <i class="fas fa-cog"></i> 托管于 <a href="#">GitHub Pages</a> · 
+                <a href="#" onclick="alert('请修改链接到您的仓库issues')">报告问题</a>
+            </span>
+        </div>
+    </div>
+
+    <!-- 简单的使用提示 (此部分可删除) -->
+    <div style="max-width:1200px; margin:1rem auto 0; padding:0 1rem; font-size:0.85rem; color:#6b7280; text-align:center;">
+        ⚡ 这是数据集展示模板。请替换所有占位内容（标题、描述、文件链接、表格、引用、作者、仓库链接等）。<br>
+        文件下载链接建议使用 raw.githubusercontent.com 直链，或指向仓库中的文件。
+    </div>
+</body>
+</html>
