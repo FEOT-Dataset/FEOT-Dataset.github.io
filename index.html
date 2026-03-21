@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEOT Dataset</title>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 文件夹可视化线 */
+        .folder-tree ul {
+            list-style: none;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .folder-tree li {
+            position: relative;
+            padding-left: 1.2rem;
+            margin: 0.5rem 0;
+        }
+        .folder-tree li::before {
+            content: "├─";
+            position: absolute;
+            left: 0;
+            color: #94a3b8;
+        }
+        .folder-tree li:last-child::before {
+            content: "└─";
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 2rem 2rem 1.5rem;
+        }
+
+        /* 头部区域 */
+        .dataset-header {
+            margin-bottom: 2.5rem;
+            border-bottom: 2px solid #eef2f6;
+            padding-bottom: 1.5rem;
+        }
+
+        .dataset-title {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .dataset-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(145deg, #0f2b4d, #1e4a6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .badge {
+            background-color: #e6f0f9;
+            color: #1e4a6b;
+            padding: 0.25rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .badge i {
+            font-size: 0.8rem;
+            color: #2c6b9b;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.8rem 3rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .meta-icon {
+            width: 42px;
+            height: 42px;
+            background: #eef6ff;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+            font-size: 1.3rem;
+        }
+
+        .meta-text h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .meta-text p {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .meta-text small {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .description {
+            background: #f1f5f9;
+            padding: 1.5rem 2rem;
+            border-radius: 28px;
+            margin: 2rem 0 1.5rem;
+            font-size: 1.1rem;
+            border-left: 6px solid #3b82f6;
+        }
+
+        /* 文件下载卡片区 */
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 650;
+            margin: 2.5rem 0 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #2563eb;
+            background: #e2e8f0;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .file-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 1.2rem 1.2rem 1rem 1.2rem;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+        }
+
+        .file-card:hover {
+            border-color: #a5c9ff;
+            box-shadow: 0 12px 20px -12px rgba(37,99,235,0.3);
+            transform: translateY(-3px);
+        }
+
+        .file-type {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .file-type i {
+            font-size: 2rem;
+        }
+
+        .file-size {
+            background: #eef2f6;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .file-name {
+            font-weight: 650;
+            font-size: 1.2rem;
+            margin: 5px 0 5px;
+            word-break: break-word;
+        }
+
+        .file-desc {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .download-btn {
+            background: #f0f4fe;
+            color: #1e4a7a;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+            border: 1px solid transparent;
+        }
+
+        .download-btn:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .download-btn:hover i {
+            color: white;
+        }
+
+        /* 数据预览表格 */
+        .preview-table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #e9eef2;
+            margin: 1.8rem 0;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 600px;
+        }
+
+        th {
+            background: #f1f6fa;
+            font-weight: 600;
+            padding: 1rem 1rem;
+            text-align: left;
+            color: #1e293b;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid #dee7ef;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #fafdff;
+        }
+
+        /* 字段描述表格 */
+        .schema-table {
+            background: #f8fafc;
+            border-radius: 18px;
+            border: 1px solid #dde3ea;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .schema-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 3fr;
+            border-bottom: 1px solid #dde3ea;
+        }
+
+        .schema-row.header {
+            background: #e6edf5;
+            font-weight: 600;
+            color: #0b3954;
+        }
+
+        .schema-cell {
+            padding: 0.9rem 1.2rem;
+            word-break: break-word;
+        }
+
+        /* 引用区块 */
+        .citation-box {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 1.6rem 2rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #cfdeed;
+            margin: 1.8rem 0 2.2rem;
+            position: relative;
+        }
+
+        .citation-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: none;
+            border: none;
+            color: #1e293b;
+        }
+
+        .license {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* 页脚 */
+        .footer {
+            margin-top: 3.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e9eef2;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* GitHub 角标 (小型) */
+        .github-corner {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #0f172a;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .github-corner i {
+            font-size: 1.1rem;
+        }
+
+        .github-corner:hover {
+            background: #2563eb;
+        }
+
+        /* 响应式小修 */
+        @media (max-width: 640px) {
+            .container { padding: 1.5rem 1rem; }
+            .dataset-title h1 { font-size: 1.8rem; }
+            .meta-grid { gap: 1.2rem; }
+            .schema-row { grid-template-columns: 1fr 1fr 2fr; }
+        }
+        /* 图标颜色微调 */
+        .fa-file-csv { color: #27a745; }
+        .fa-file-json { color: #f7b731; }
+        .fa-file-archive { color: #b85c5c; }
+        .fa-file-pdf { color: #e05a5a; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部信息 (FET数据集名称、描述等) -->
+        <div class="dataset-header">
+            <div class="dataset-title">
+                <i class="fas fa-database" style="margin-right: 10px; color: #2563eb; font-size: 34px;"></i>
+                <h1> FEOT Dataset</h1>
+                <span class="badge"><i class="fas fa-tag"></i> v1.0 · 2025-03</span>
+                <span class="badge"><i class="fas fa-database"></i> Public · CC BY 4.0</span>
+            </div>
+
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fa-solid fa-file-video" style="font-size: 28px;"></i></span>
+                    <div class="meta-text">
+                        <h4>Sequences</h4>
+                        <p>354 <small> videos</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fa-solid fa-images" style="font-size: 28px;"></i></span>
+                    <div class="meta-text">
+                        <h4>Images</h4>
+                        <p>73K <small> frames</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fa-solid fa-star-half-stroke" style="font-size: 28px;"></i></span>
+                    <div class="meta-text">
+                        <h4>Occlusions</h4>
+                        <p>11 <small> levels</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fa-brands fa-creative-commons-remix" style="font-size: 28px;"></i></span>
+                    <div class="meta-text">
+                        <h4>Challenges</h4>
+                        <p>10 <small> attributes</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fa-solid fa-universal-access" style="font-size: 28px;"></i></span>
+                    <div class="meta-text">
+                        <h4>Categories</h4>
+                        <p>10 <small> objects</small></p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon"><i class="fa-solid fa-hard-drive" style="font-size: 28px;"></i></span>
+                    <div class="meta-text">
+                        <h4>Volume</h4>
+                        <p>XXX <small> GB</small></p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 数据集简介（替换为您自己的描述） -->
+            <div class="description">
+                <i class="fas fa-quote-left" style="float: left; color:#2563eb; opacity:0.7; margin-right:8px;"></i>
+                <br>
+                This is a <b>high spatial resolution Frame-Event</b> tracking dataset with <b>pixel-level alignment</b> and <b>occlusion-level annotations</b>, serving as a reliable benchmark for evaluating occlusion-robust single-object trackers.
+                Feel free to download and use！
+                <br>
+                CVPR 2026 paper: <a href="#" target="_blank" title="Paper Link" onclick="alert('Paper link will be open !')">Tracking through Severe Occlusion via Event-Derived Transient Cues</a>.
+                <br>
+                <i class="fas fa-quote-right" style="float: right; color:#2563eb; opacity:0.7; margin-right:8px;"></i>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <i class="fas fa-download"></i> Download FEOT Dataset
+        </div>
+        <!-- 文件夹结构 -->
+        <div class="folder-tree" style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <ul style="list-style: none; padding-left: 0;">
+                <li><i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59); position: relative; z-index:10;" ></i> FEOT root folder
+                    <ul style="list-style: none; padding-left: 1.5rem;">
+                        <li><i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59); position: relative; z-index:10;" ></i> sequence_000001
+                            <ul style="list-style: none; padding-left: 1.5rem;">
+                                <li><i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59); position: relative; z-index:10;" ></i> event
+                                    <ul style="list-style: none; padding-left: 1.5rem;">
+                                        <li><i class="fa-solid fa-image" style="color:#3cd2a8;"></i> 000001.png</li>
+                                        <li><i class="fa-solid fa-image" style="color:#3cd2a8;"></i> 000002.png</li>
+                                        <li>⋯</li>
+                                    </ul>
+                                </li>
+                                <li><i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59); position: relative; z-index:10;" ></i> frame
+                                    <ul style="list-style: none; padding-left: 1.5rem;">
+                                        <li><i class="fa-solid fa-image" style="color:#3cd2a8;"></i> 000001.png</li>
+                                        <li><i class="fa-solid fa-image" style="color:#3cd2a8;"></i> 000002.png</li>
+                                        <li>⋯</li>
+                                    </ul>
+                                </li>
+                                <li><i class="fa-solid fa-heading fa-shake" style="color: rgb(177, 151, 252); position: relative; z-index:10;"></i> aligned_event.h5</li>
+                                <li><i class="fa-solid fa-file-lines" style="color: rgb(116, 192, 252); position: relative; z-index:10;"></i> gt.txt
+                                &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; format per line: category_ID&emsp;instance_ID&emsp;left_x&emsp;top_y&emsp;width&emsp;height&emsp;occlusion_level</li>
+                                <li><i class="fa-solid fa-file-lines" style="color: rgb(116, 192, 252); position: relative; z-index:10;"></i> attribute.txt
+                                &emsp;&emsp;&emsp;&emsp;&emsp; attribute IDs: OE(1), LI(2), RN(3), BI(4), VC(5), OC(6), FM(7), NM(8), SV(9), OV(10) </li>
+                                <li><i class="fa-solid fa-file-lines" style="color: rgb(116, 192, 252); position: relative; z-index:10;"></i> timestamp.txt
+                                &emsp;&emsp;&emsp;&emsp; unit: microseconds (μs) </li>
+                            </ul>
+                        </li>
+                        <li><i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59); position: relative; z-index:10;" ></i> sequence_000002</li>
+                        <li><i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59); position: relative; z-index:10;" ></i> sequence_000003</li>
+                        <li>⋯</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="download link">
+            <a class="download-btn" href="#" target="_blank" onclick="alert('Download link will be open !')">
+                <i class="fas fa-download"></i> Click to Download
+            </a>
+        </div>
+
+        <!-- <hr style="border: none; height: 1px; background-color: #e0e0e0; margin: 1.5rem 0;"> -->
+
+        <!-- 文件下载区块（请替换文件名、大小、描述，并更新下载链接） -->
+        <div class="section-title">
+            <i class="fas fa-list-ul"></i> Dataset Files
+        </div>
+        <div class="file-grid">
+            <!-- 卡片1：CSV -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59);"></i>
+                    <span class="file-size">event folder</span>
+                </div>
+                <div class="file-name">Event Frame Sequence</div>
+                <div class="file-desc">This folder contains a sequence of temporally continuous event frames generated from the event streams.</div>
+            </div>
+            <!-- 卡片2：JSON -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fa-solid fa-folder-open" style="color: rgb(255, 212, 59);"></i>
+                    <span class="file-size">frame folder</span>
+                </div>
+                <div class="file-name">RGB Frame Sequence</div>
+                <div class="file-desc">This folder contains a sequence of temporally ordered conventional images captured by an RGB camera.</div>
+            </div>
+            <!-- 卡片3：PDF文档 -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fa-solid fa-heading fa-shake" style="color: rgb(177, 151, 252);"></i>
+                    <span class="file-size">aligned_event.h5</span>
+                </div>
+                <div class="file-name">Aligned Event Stream</div>
+                <div class="file-desc">This file stores the event stream data in HDF5 format. The events have been spatially and temporally aligned with the frame images.</div>
+            </div>
+            <!-- 卡片5：示例代码 -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fa-solid fa-file-lines" style="color: rgb(116, 192, 252);"></i>
+                    <span class="file-size">gt.txt</span>
+                </div>
+                <div class="file-name">Ground Truth</div>
+                <div class="file-desc">This file contains frame-by-frame ground-truth bounding boxes of the target, annotated by a professional labeling company.</div>
+            </div>
+            <!-- 卡片4：压缩包 -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fa-solid fa-file-lines" style="color: rgb(116, 192, 252);"></i>
+                    <span class="file-size">attribute.txt</span>
+                </div>
+                <div class="file-name">Challenging Attributes</div>
+                <div class="file-desc">This file contains video attribute annotations: the first row lists attribute IDs, and the second row indicates presence (1) or absence (0).</div>
+            </div>
+            <!-- 卡片6：补充说明 -->
+            <div class="file-card">
+                <div class="file-type">
+                    <i class="fa-solid fa-file-lines" style="color: rgb(116, 192, 252);"></i>
+                    <span class="file-size">timestamp.txt</span>
+                </div>
+                <div class="file-name">Timestamps</div>
+                <div class="file-desc">This file contains the timestamps of each RGB image and event frame. The two modalities are temporally aligned.</div>
+            </div>
+        </div>
+
+        <!-- 数据预览（请根据实际数据修改示例行） -->
+        <div class="section-title">
+            <i class="fas fa-eye"></i> Sample Preview
+        </div>
+        <div class="preview-image-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 1.8rem 0;">
+            <!-- 第1行第1列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #aaaaaa;">
+                <img src="images_box/1/000148_1.png" alt="图表预览1" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">全球年均温变化 (1850-1900基准)</div> -->
+            </div>
+            <!-- 第1行第2列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/1/000148_2.png" alt="图表预览2" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">区域温度异常对比</div> -->
+            </div>
+            <!-- 第1行第3列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/1/000148_3.png" alt="图表预览3" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">置信区间与不确定性</div> -->
+            </div>
+
+            <!-- 第2行第1列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #aaaaaa;">
+                <img src="images_box/2/000113_1.png" alt="图表预览4" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">季节滑动平均趋势</div> -->
+            </div>
+            <!-- 第2行第2列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/2/000113_2.png" alt="图表预览5" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">站点数量变化</div> -->
+            </div>
+            <!-- 第2行第3列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/2/000113_3.png" alt="图表预览6" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">空间插值结果</div> -->
+            </div>
+
+            <!-- 第3行第1列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #aaaaaa;">
+                <img src="images_box/3/000017_1.png" alt="图表预览7" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">异常值频率分布</div> -->
+            </div>
+            <!-- 第3行第2列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/3/000017_2.png" alt="图表预览8" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">长期线性趋势拟合</div> -->
+            </div>
+            <!-- 第3行第3列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/3/000017_3.png" alt="图表预览9" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">季节性分解成分</div> -->
+            </div>
+
+            <!-- 第4行第1列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #aaaaaa;">
+                <img src="images_box/4/000625_1.png" alt="图表预览10" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">极端事件频率</div> -->
+            </div>
+            <!-- 第4行第2列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/4/000625_2.png" alt="图表预览11" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">与CO₂浓度相关性</div> -->
+            </div>
+            <!-- 第4行第3列 -->
+            <div class="image-card" style="background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eef2f6;">
+                <img src="images_box/4/000625_3.png" alt="图表预览12" style="width: 100%; height: auto; display: block;">
+                <!-- <div style="padding: 0.8rem 1rem; font-size: 0.9rem; color: #2c3e50; font-weight: 500;">未来情景预估</div> -->
+            </div>
+        </div>
+
+        <!-- 字段描述 (数据字典) 按需修改
+        <div class="section-title">
+            <i class="fas fa-list-ul"></i> 字段说明
+        </div>
+        <div class="schema-table">
+            <div class="schema-row header">
+                <div class="schema-cell">字段名</div>
+                <div class="schema-cell">类型</div>
+                <div class="schema-cell">描述</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">year</div><div class="schema-cell">整数</div><div class="schema-cell">观测年份 (1850-2024)</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">month</div><div class="schema-cell">整数</div><div class="schema-cell">月份 (1-12)</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">anomaly_degC</div><div class="schema-cell">浮点数</div><div class="schema-cell">相对于1850-1900平均的气温异常值 (单位: °C)</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">lower_bound / upper_bound</div><div class="schema-cell">浮点数</div><div class="schema-cell">95%置信区间下/上限</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">station_count</div><div class="schema-cell">整数</div><div class="schema-cell">用于计算该月异常值的站点数量</div>
+            </div>
+            <div class="schema-row">
+                <div class="schema-cell">region</div><div class="schema-cell">字符串</div><div class="schema-cell">区域标识 (全球/北半球/南半球/热带) ，本文件统一为"Global"</div>
+            </div>
+        </div> -->
+
+        <!-- 引用信息 (修改为您希望引用的方式) -->
+        <div class="section-title">
+            <i class="fas fa-quote-right"></i> Citation
+        </div>
+        <div class="citation-box">
+            <pre>@InProceedings{Dong2026CVPR,
+        title = {Tracking through Severe Occlusion via Event-Derived Transient Cues},
+        author = {Hao Dong, Yujin Liu, Haoyue Liu, Zhenyu Wang, Shihan Peng, Zhiwei Shi, Yi Chang, Luxin Yan},
+        booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+        pages={XXX--XXX},
+        year = {2026}
+}</pre>
+        </div>
+
+        <!-- 许可和作者 -->
+        <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between;">
+            <div>
+                <span class="license"><i class="fas fa-balance-scale"></i> Creative Commons Attribution 4.0 International (CC BY 4.0)</span>
+                <p style="margin-top: 12px; color: #2c3e50;">
+                    <i class="fas fa-user" style="margin-right: 8px; color:#2563eb;"></i> Maintainer: Hao Dong
+                    <i class="fas fa-envelope" style="margin-left: 12px; color:#2563eb;"></i> Contact Email: donghao0205@hust.edu.cn
+                    <br>
+                    <i class="fas fa-user" style="margin-right: 8px; color:#2563eb;"></i> Maintainer: Yujin Liu&nbsp;&nbsp;&nbsp;
+                    <i class="fas fa-envelope" style="margin-left: 12px; color:#2563eb;"></i> Contact Email: yujinliu@hust.edu.cn
+                </p>
+            </div>
+            <!-- 直接链接到 GitHub 仓库的图标按钮 (请替换用户名/仓库) -->
+            <!-- 不开放代码，隐藏GitHub链接 -->
+            <!-- <a class="github-corner" href="https://github.com/您的用户名/您的仓库" target="_blank">
+                <i class="fab fa-github"></i>  GitHub 仓库
+            </a> -->
+        </div>
+
+        <!-- 页脚区 (更新日期 / 说明) -->
+        <div class="footer">
+            <span><i class="far fa-clock"></i> Last Updated: 2025-03-21</span>
+            <span>
+                <i class="fas fa-cog"></i> Hosted on <a href="#">GitHub Pages</a>
+                <!-- <a href="#" onclick="alert('请修改链接到您的仓库issues')">Report Issues</a> -->
+            </span>
+        </div>
+    </div>
+
+    <!-- 简单的使用提示 (此部分可删除) -->
+    <!-- <div style="max-width:1200px; margin:1rem auto 0; padding:0 1rem; font-size:0.85rem; color:#6b7280; text-align:center;">
+        ⚡ 这是数据集展示模板。请替换所有占位内容（标题、描述、文件链接、表格、引用、作者、仓库链接等）。<br>
+        文件下载链接建议使用 raw.githubusercontent.com 直链，或指向仓库中的文件。
+    </div> -->
+
+    <!-- 图片放大模态框 -->
+    <div id="imageModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(188, 188, 188, 0.7); justify-content: center; align-items: center; cursor: pointer;">
+        <img id="modalImage" style="max-width: 90%; max-height: 90%; object-fit: contain;">
+        <!-- <img id="modalImage" style="width: 70%; height: auto; object-fit: contain;"> -->
+    </div>
+    <script>
+        // 获取所有图片卡片中的 img 元素
+        const images = document.querySelectorAll('.image-card img');
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+
+        images.forEach(img => {
+            img.style.cursor = 'pointer'; // 鼠标指针变为手型
+            img.addEventListener('click', (e) => {
+                e.stopPropagation(); // 防止冒泡
+                modal.style.display = 'flex';
+                modalImg.src = img.src;
+            });
+        });
+
+        // 点击模态框背景关闭
+        modal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    </script>
+
+</body>
+</html>
