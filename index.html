@@ -411,8 +411,8 @@
         <div class="dataset-header">
             <div class="dataset-title">
                 <i class="fas fa-database" style="margin-right: 10px; color: #2563eb; font-size: 34px;"></i>
-                <h1> FEOT Dataset</h1>
-                <span class="badge"><i class="fas fa-tag"></i> v1.0 · 2025-03</span>
+                <h1> Frame-Event Occlusion Tracking Dataset</h1>
+                <span class="badge"><i class="fas fa-tag"></i> v1.0 · 2025-05</span>
                 <span class="badge"><i class="fas fa-database"></i> Public · CC BY 4.0</span>
             </div>
 
@@ -421,14 +421,14 @@
                     <span class="meta-icon"><i class="fa-solid fa-file-video" style="font-size: 28px;"></i></span>
                     <div class="meta-text">
                         <h4>Sequences</h4>
-                        <p>354 <small> videos</small></p>
+                        <p>370 <small> videos</small></p>
                     </div>
                 </div>
                 <div class="meta-item">
                     <span class="meta-icon"><i class="fa-solid fa-images" style="font-size: 28px;"></i></span>
                     <div class="meta-text">
                         <h4>Images</h4>
-                        <p>73K <small> frames</small></p>
+                        <p>73K+ <small> frames</small></p>
                     </div>
                 </div>
                 <div class="meta-item">
@@ -684,6 +684,44 @@
             </div>
         </div> -->
 
+
+        <!-- 补充性说明部分 —— 英文版本，风格适配 -->
+        <div class="section-title">
+            <i class="fas fa-info-circle" style="color: #2563eb; background: #e2e8f0; padding: 8px; border-radius: 12px;"></i> 
+            Supplementary Notes
+        </div>
+        <!-- 采用与页面卡片一致的柔和容器风格 -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.8rem 2rem; margin: 1.2rem 0 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- 说明条目 1 -->
+                <li style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="background: #e6f0f9; color: #1e4a6b; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+                    </span>
+                    <div>
+                        <strong style="font-weight: 650; color: #0f172a; display: block; margin-bottom: 4px;">Note on Dataset Sequence Count</strong>
+                        <p style="margin: 0; color: #334155; line-height: 1.6;">
+                            The total number of sequences released in the current version (<span style="font-weight: 600; background: #e6f0f9; padding: 0 6px; border-radius: 6px; color:#1e4a6b;">370 sequences</span>) is slightly higher than the number reported in the original paper. This is primarily due to the inclusion of additional sequences that were rigorously filtered and added during the final stage of data curation and quality verification, aiming to enhance scene diversity and cover a broader range of occlusion patterns.
+                        </p>
+                    </div>
+                </li>
+                <!-- 说明条目 2 -->
+                <li style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="background: #e6f0f9; color: #1e4a6b; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-user-shield" style="font-size: 1.2rem;"></i>
+                    </span>
+                    <div>
+                        <strong style="font-weight: 650; color: #0f172a; display: block; margin-bottom: 4px;">Privacy Protection Measures</strong>
+                        <p style="margin: 0; color: #334155; line-height: 1.6;">
+                            To strictly safeguard any potential personal privacy, we have applied <span style="font-weight: 600; background: #e6f0f9; padding: 0 6px; border-radius: 6px; color:#1e4a6b;">mosaic blurring</span> to all regions containing human faces in the dataset. This processing step does not compromise the validity of the occlusion tracking annotations, while ensuring compliance with data privacy and ethical standards.
+                        </p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        
+
         <!-- 引用信息 (修改为您希望引用的方式) -->
         <div class="section-title">
             <i class="fas fa-quote-right"></i> Citation
@@ -719,7 +757,7 @@
 
         <!-- 页脚区 (更新日期 / 说明) -->
         <div class="footer">
-            <span><i class="far fa-clock"></i> Last Updated: 2025-03-21</span>
+            <span><i class="far fa-clock"></i> Last Updated: 2025-05-05</span>
             <span>
                 <i class="fas fa-cog"></i> Hosted on <a href="#">GitHub Pages</a>
                 <!-- <a href="#" onclick="alert('请修改链接到您的仓库issues')">Report Issues</a> -->
