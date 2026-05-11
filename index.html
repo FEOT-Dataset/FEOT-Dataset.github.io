@@ -839,37 +839,41 @@
 
         <!-- ===== Visitor Analytics ===== -->
         <!-- ===== Visitor Analytics ===== -->
-        <div class="analytics-panel">
+        <!-- ===== Visitor Analytics ===== -->
+        <div class="analytics-panel">        
             <div class="analytics-title">
-                <i class="fas fa-chart-line"></i> FEOT Dataset Analytics
+                <i class="fas fa-chart-line"></i>
+                FEOT Dataset Analytics
             </div>
             <div class="analytics-grid">
-                <!-- 卡片1: Vercount 总浏览量 -->
+                <!-- Vercount 总浏览量 (PV) -->
                 <div class="analytics-card">
-                    <div class="analytics-number" id="vercount_pv">0</div>
+                    <!-- 注意：id 必须是 vercount_value_page_pv -->
+                    <div class="analytics-number" id="vercount_value_page_pv">0</div>
                     <div class="analytics-label">Total Page Views</div>
                 </div>
-                <!-- 卡片2: Vercount 独立访客 -->
+                <!-- Vercount 独立访客 (UV) -->
                 <div class="analytics-card">
-                    <div class="analytics-number" id="vercount_uv">0</div>
+                    <!-- 注意：id 必须是 vercount_value_site_uv -->
+                    <div class="analytics-number" id="vercount_value_site_uv">0</div>
                     <div class="analytics-label">Unique Visitors</div>
                 </div>
-                <!-- 卡片3: 平均停留时间 -->
+                <!-- 平均停留时间 (本地计算) -->
                 <div class="analytics-card">
                     <div class="analytics-number" id="avgStay">0s</div>
                     <div class="analytics-label">Avg. Stay Time</div>
                 </div>
-                <!-- 卡片4: 论文PDF点击 -->
+                <!-- 论文PDF点击次数 -->
                 <div class="analytics-card">
                     <div class="analytics-number" id="paperClicks">0</div>
                     <div class="analytics-label">Paper PDF Clicks</div>
                 </div>
-                <!-- 卡片5: 数据集下载 -->
+                <!-- 数据集下载次数 -->
                 <div class="analytics-card">
                     <div class="analytics-number" id="downloadClicks">0</div>
-                    <div class="analytics-label">Dataset Download Clicks</div>
+                    <div class="analytics-label">Dataset Downloads</div>
                 </div>
-            </div>
+            </div>        
         </div>
 
         <!-- 页脚区 (更新日期 / 说明) -->
@@ -911,20 +915,25 @@
        /* ===== Cloud-based Analytics with CountAPI ===== */
        /* ===== Vercount 真实访问量 (替代不蒜子) ===== */
        /* ===== Vercount 手动获取真实访问量 (替代不蒜子) ===== */
-        (async function() {
-            const url = encodeURIComponent(window.location.href);
-            const apiUrl = `https://vercount.one/api?url=${url}`;
-            try {
-                const res = await fetch(apiUrl);
-                const data = await res.json();
-                const pv = data.page_pv || 0;
-                const uv = data.page_uv || 0;
-                document.getElementById('vercount_pv').textContent = pv;
-                document.getElementById('vercount_uv').textContent = uv;
-            } catch (e) {
-                document.getElementById('vercount_pv').textContent = 'N/A';
-                document.getElementById('vercount_uv').textContent = 'N/A';
-            }
+        /* ===== Vercount 真实访问量 (脚本注入方式，无 CORS 问题) ===== */
+        (function() {
+            var script = document.createElement('script');
+            script.async = true;
+            // 使用 jsdelivr CDN，国内可访问
+            script.src = 'https://cdn.jsdelivr.net/npm/vercount@latest/dist/vercount.min.js';
+            script.onload = function() {
+                // 脚本加载完成后，Vercount 会自动填充 id 为 vercount_value_page_pv 和 vercount_value_site_uv 的元素
+                console.log('Vercount script loaded, PV/UV updated.');
+            };
+            script.onerror = function() {
+                console.warn('Vercount script failed to load.');
+                // 如果加载失败，显示 err
+                var pv = document.getElementById('vercount_value_page_pv');
+                var uv = document.getElementById('vercount_value_site_uv');
+                if (pv) pv.textContent = 'err';
+                if (uv) uv.textContent = 'err';
+            };
+            document.head.appendChild(script);
         })();
         
         /* ===== 本地计算：平均停留时间、论文点击、数据集下载 ===== */
