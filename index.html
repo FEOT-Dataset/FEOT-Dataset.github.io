@@ -838,29 +838,27 @@
         </div>
 
         <!-- ===== Visitor Analytics ===== -->
+        <!-- ===== Visitor Analytics ===== -->
         <div class="analytics-panel">        
             <div class="analytics-title">
                 <i class="fas fa-chart-line"></i>
                 FEOT Dataset Analytics
             </div>
             <div class="analytics-grid">
-                <!-- 使用不蒜子 PV 代替 UV，线上环境可正常显示 -->
                 <div class="analytics-card">
-                    <div class="analytics-number">
-                        <span id="busuanzi_value_site_pv">-</span>
-                    </div>
+                    <div class="analytics-number" id="totalVisits">-</div>
                     <div class="analytics-label">Total Page Views</div>
                 </div>        
                 <div class="analytics-card">
-                    <div class="analytics-number" id="avgStay">0s</div>
+                    <div class="analytics-number" id="avgStay">-</div>
                     <div class="analytics-label">Avg. Stay Time</div>
                 </div>        
                 <div class="analytics-card">
-                    <div class="analytics-number" id="paperClicks">0</div>
+                    <div class="analytics-number" id="paperClicks">-</div>
                     <div class="analytics-label">Paper PDF Clicks</div>
                 </div>        
                 <div class="analytics-card">
-                    <div class="analytics-number" id="downloadClicks">0</div>
+                    <div class="analytics-number" id="downloadClicks">-</div>
                     <div class="analytics-label">Dataset Downloads</div>
                 </div>        
             </div>        
@@ -902,93 +900,117 @@
         });
 
         /* ===== Busuanzi Real Visitor Counter ===== */
+        /* ===== Cloud-based Analytics with CountAPI ===== */
         (function() {
-            var script = document.createElement('script');
-            script.async = true;
-            script.src = '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
-            document.head.appendChild(script);
-        })();
+            // 自定义命名空间，防止与其他站点冲突
+            const NS = 'feot-dataset-2026';
+            const API_BASE = 'https://api.countapi.xyz';
         
-        /* ===== Dataset Download Tracking ===== */
-        function trackDownload() {
-            gtag('event', 'dataset_download', {
-                event_category: 'Dataset',
-                event_label: 'FEOT Download',
-                value: 1
-            });
-            incrementClick('downloadClicks');
-        }
-        
-        /* ===== Paper Click Tracking ===== */
-        function trackPaperClick() {
-            gtag('event', 'paper_click', {
-                event_category: 'Paper',
-                event_label: 'CVPR2026 Paper',
-                value: 1
-            });
-            incrementClick('paperClicks');
-        }
-        
-        function incrementClick(id) {
-            var el = document.getElementById(id);
-            if (el) {
-                var current = parseInt(el.textContent) || 0;
-                current += 1;
-                el.textContent = current;
+            async function fetchCount(key) {
+                const url = `${API_BASE}/get/${NS}/${key}`;
                 try {
-                    localStorage.setItem(id, current);
-                } catch(e) {}
-            }
-        }
-        
-        // 页面加载时恢复持久化的点击次数
-        (function() {
-            ['paperClicks', 'downloadClicks'].forEach(function(id) {
-                try {
-                    var saved = localStorage.getItem(id);
-                    if (saved !== null) {
-                        var el = document.getElementById(id);
-                        if (el) el.textContent = saved;
-                    }
-                } catch(e) {}
-            });
-        })();
-        
-        /* ===== Average Stay Time Calculation ===== */
-        (function() {
-            var startTime = Date.now();
-            var avgEl = document.getElementById('avgStay');
-            
-            function updateAvgDisplay() {
-                try {
-                    var visitCount = parseInt(localStorage.getItem('visitCount') || '0');
-                    var totalStay = parseInt(localStorage.getItem('totalStay') || '0');
-                    if (visitCount > 0) {
-                        var avgSec = Math.round(totalStay / visitCount);
-                        var minutes = Math.floor(avgSec / 60);
-                        var seconds = avgSec % 60;
-                        avgEl.textContent = minutes > 0 ? minutes + 'm ' + seconds + 's' : seconds + 's';
-                    } else {
-                        avgEl.textContent = '0s';
-                    }
-                } catch(e) {
-                    avgEl.textContent = '--';
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    return data.value || 0;
+                } catch (e) {
+                    console.warn('CountAPI fetch failed for', key, e);
+                    return null;
                 }
             }
-            
-            updateAvgDisplay();
-            
-            window.addEventListener('beforeunload', function() {
-                var durationSec = Math.round((Date.now() - startTime) / 1000);
-                if (durationSec < 0) return;
+        
+            async function hitCount(key) {
+                const url = `${API_BASE}/hit/${NS}/${key}`;
                 try {
-                    var visitCount = parseInt(localStorage.getItem('visitCount') || '0');
-                    var totalStay = parseInt(localStorage.getItem('totalStay') || '0');
-                    visitCount += 1;
-                    totalStay += durationSec;
-                    localStorage.setItem('visitCount', visitCount);
-                    localStorage.setItem('totalStay', totalStay);
-                } catch(e) {}
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    return data.value;
+                } catch (e) {
+                    console.warn('CountAPI hit failed for', key, e);
+                    return null;
+                }
+            }
+        
+            // 更新某个 key 的显示值
+            function updateDisplay(elementId, value) {
+                const el = document.getElementById(elementId);
+                if (el) el.textContent = value;
+            }
+        
+            // 1. 页面总访问量（PV）：每次加载自动 +1
+            (async () => {
+                const val = await hitCount('pageviews');
+                if (val !== null) updateDisplay('totalVisits', val);
+                else updateDisplay('totalVisits', 'N/A');
+            })();
+        
+            // 2. 论文点击次数：显示当前值，点击时增加
+            (async () => {
+                const val = await fetchCount('paper_clicks');
+                if (val !== null) updateDisplay('paperClicks', val);
+            })();
+        
+            // 3. 数据集下载次数：显示当前值，点击时增加
+            (async () => {
+                const val = await fetchCount('dataset_downloads');
+                if (val !== null) updateDisplay('downloadClicks', val);
+            })();
+        
+            // 4. 平均停留时间：需要访问次数和总停留秒数
+            (async () => {
+                const visits = await fetchCount('stay_visits');
+                const totalSec = await fetchCount('stay_total_seconds');
+                if (visits !== null && totalSec !== null && visits > 0) {
+                    let avgSec = Math.round(totalSec / visits);
+                    let minutes = Math.floor(avgSec / 60);
+                    let seconds = avgSec % 60;
+                    updateDisplay('avgStay', minutes ? `${minutes}m ${seconds}s` : `${seconds}s`);
+                } else if (visits === 0) {
+                    updateDisplay('avgStay', '0s');
+                } else {
+                    updateDisplay('avgStay', 'N/A');
+                }
+            })();
+        
+            // 注册点击事件（论文链接和下载按钮）
+            window.trackPaperClick = async function() {
+                // 原有的 GA 事件
+                if (typeof gtag === 'function') {
+                    gtag('event', 'paper_click', {
+                        event_category: 'Paper',
+                        event_label: 'CVPR2026 Paper',
+                        value: 1
+                    });
+                }
+                const val = await hitCount('paper_clicks');
+                if (val !== null) updateDisplay('paperClicks', val);
+            };
+        
+            window.trackDownload = async function() {
+                if (typeof gtag === 'function') {
+                    gtag('event', 'dataset_download', {
+                        event_category: 'Dataset',
+                        event_label: 'FEOT Download',
+                        value: 1
+                    });
+                }
+                const val = await hitCount('dataset_downloads');
+                if (val !== null) updateDisplay('downloadClicks', val);
+            };
+        
+            // 页面关闭时记录停留时间（使用 sendBeacon 保证发送）
+            const pageEnterTime = Date.now();
+            window.addEventListener('beforeunload', function() {
+                const secElapsed = Math.round((Date.now() - pageEnterTime) / 1000);
+                if (secElapsed < 0) return;
+                // 分别 hit 两个 key：stay_visits 和 stay_total_seconds
+                const visitUrl = `${API_BASE}/hit/${NS}/stay_visits`;
+                const secUrl = `${API_BASE}/hit/${NS}/stay_total_seconds?amount=${secElapsed}`;
+                try {
+                    navigator.sendBeacon(visitUrl);
+                    navigator.sendBeacon(secUrl);
+                } catch (e) {
+                    console.warn('sendBeacon failed', e);
+                }
             });
         })();
     </script>
