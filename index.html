@@ -817,6 +817,36 @@
         year = {2026}
 }</pre>
         </div>
+        
+        <!-- ===== Visitor Analytics ===== -->
+        <div class="analytics-panel">        
+            <div class="analytics-title">
+                <i class="fas fa-chart-line"></i>
+                FEOT Dataset Analytics
+            </div>
+            <div class="analytics-grid">
+                <!-- Total Page Views (云端) -->
+                <div class="analytics-card">
+                    <div class="analytics-number" id="totalPageViews">0</div>
+                    <div class="analytics-label">Total Page Views</div>
+                </div>
+                <!-- Avg. Stay Time (本地计算) -->
+                <div class="analytics-card">
+                    <div class="analytics-number" id="avgStay">0s</div>
+                    <div class="analytics-label">Avg. Stay Time</div>
+                </div>
+                <!-- Paper PDF Clicks (云端) -->
+                <div class="analytics-card">
+                    <div class="analytics-number" id="paperClicks">0</div>
+                    <div class="analytics-label">Paper Clicks</div>
+                </div>
+                <!-- Dataset Downloads (云端) -->
+                <div class="analytics-card">
+                    <div class="analytics-number" id="downloadClicks">0</div>
+                    <div class="analytics-label">Dataset Clicks</div>
+                </div>
+            </div>        
+        </div>
 
         <!-- 许可和作者 -->
         <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between;">
@@ -835,45 +865,6 @@
             <!-- <a class="github-corner" href="https://github.com/您的用户名/您的仓库" target="_blank">
                 <i class="fab fa-github"></i>  GitHub 仓库
             </a> -->
-        </div>
-
-        <!-- ===== Visitor Analytics ===== -->
-        <!-- ===== Visitor Analytics ===== -->
-        <!-- ===== Visitor Analytics ===== -->
-        <div class="analytics-panel">        
-            <div class="analytics-title">
-                <i class="fas fa-chart-line"></i>
-                FEOT Dataset Analytics
-            </div>
-            <div class="analytics-grid">
-                <!-- Vercount 总浏览量 (PV) -->
-                <div class="analytics-card">
-                    <!-- 注意：id 必须是 vercount_value_page_pv -->
-                    <div class="analytics-number" id="vercount_value_page_pv">0</div>
-                    <div class="analytics-label">Total Page Views</div>
-                </div>
-                <!-- Vercount 独立访客 (UV) -->
-                <div class="analytics-card">
-                    <!-- 注意：id 必须是 vercount_value_site_uv -->
-                    <div class="analytics-number" id="vercount_value_site_uv">0</div>
-                    <div class="analytics-label">Unique Visitors</div>
-                </div>
-                <!-- 平均停留时间 (本地计算) -->
-                <div class="analytics-card">
-                    <div class="analytics-number" id="avgStay">0s</div>
-                    <div class="analytics-label">Avg. Stay Time</div>
-                </div>
-                <!-- 论文PDF点击次数 -->
-                <div class="analytics-card">
-                    <div class="analytics-number" id="paperClicks">0</div>
-                    <div class="analytics-label">Paper PDF Clicks</div>
-                </div>
-                <!-- 数据集下载次数 -->
-                <div class="analytics-card">
-                    <div class="analytics-number" id="downloadClicks">0</div>
-                    <div class="analytics-label">Dataset Clicks</div>
-                </div>
-            </div>        
         </div>
 
         <!-- 页脚区 (更新日期 / 说明) -->
@@ -917,109 +908,120 @@
        /* ===== Vercount 手动获取真实访问量 (替代不蒜子) ===== */
         /* ===== Vercount 真实访问量 (脚本注入方式，无 CORS 问题) ===== */
         /* ===== Vercount 真实访问量 (多CDN容灾 + 本地兜底) ===== */
-        /* ===== Cloudflare Workers 云端计数器 ===== */
+        /* ===== Cloudflare Worker 云端计数器 (全部指标) ===== */
+        /* ===== Cloudflare Worker 云端计数器 (全部指标) ===== */
         (function() {
-            // ！！！修改为你的 Worker 地址 ！！！
             const API_BASE = 'https://feot-counter.donghao0109.workers.dev';
-            const PV_ID = 'vercount_value_page_pv';
-            const UV_ID = 'vercount_value_site_uv';
-            const LOCAL_PV = 'feot_local_pv';
-            const LOCAL_UV = 'feot_local_uv';
+            const LOCAL_KEYS = {
+                pageviews: 'feot_local_pv',
+                paper_clicks: 'feot_local_paper',
+                dataset_downloads: 'feot_local_download',
+                stay_visits: 'feot_local_stay_visits',
+                stay_total_seconds: 'feot_local_stay_total_seconds'
+            };
         
             async function fetchCount(key) {
-                const res = await fetch(`${API_BASE}/get?key=${key}`);
-                return await res.text();
+                try {
+                    const res = await fetch(`${API_BASE}/get?key=${key}`);
+                    return parseInt(await res.text()) || 0;
+                } catch (e) {
+                    return parseInt(localStorage.getItem(LOCAL_KEYS[key]) || '0');
+                }
             }
         
             async function hitCount(key, amount = 1) {
-                const res = await fetch(`${API_BASE}/hit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key, amount })
-                });
-                const data = await res.json();
-                return data.value;
-            }
-        
-            function setLocal(key, value) {
-                try { localStorage.setItem(key, value); } catch(e) {}
-            }
-            function getLocal(key) {
-                try { return localStorage.getItem(key); } catch(e) { return null; }
-            }
-        
-            async function initPVandUV() {
-                let pv, uv;
                 try {
-                    pv = await hitCount('pageviews');
-                    uv = await hitCount('visitors');
+                    const res = await fetch(`${API_BASE}/hit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key, amount })
+                    });
+                    const data = await res.json();
+                    return data.value;
                 } catch (e) {
-                    // 网络错误，降级为本地存储
-                    pv = (parseInt(getLocal(LOCAL_PV)) || 0) + 1;
-                    uv = (parseInt(getLocal(LOCAL_UV)) || 0) + 1;
-                    setLocal(LOCAL_PV, pv);
-                    setLocal(LOCAL_UV, uv);
-                }
-                document.getElementById(PV_ID).textContent = pv;
-                document.getElementById(UV_ID).textContent = uv;
-            }
-        
-            initPVandUV();
-        })();
-        
-        /* ===== 本地计算：平均停留、论文点击、下载点击 ===== */
-        (function() {
-            var startTime = Date.now();
-            function incrementClick(id) {
-                var el = document.getElementById(id);
-                if (el) {
-                    var current = parseInt(el.textContent) || 0;
-                    current += 1;
-                    el.textContent = current;
-                    try { localStorage.setItem(id, current); } catch(e) {}
+                    const current = parseInt(localStorage.getItem(LOCAL_KEYS[key]) || '0');
+                    const newVal = current + amount;
+                    localStorage.setItem(LOCAL_KEYS[key], newVal);
+                    return newVal;
                 }
             }
         
-            ['paperClicks', 'downloadClicks'].forEach(function(id) {
-                try {
-                    var saved = localStorage.getItem(id);
-                    if (saved !== null) document.getElementById(id).textContent = saved;
-                } catch(e) {}
+            function setDisplay(id, value) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            }
+        
+            // 计算并显示平均停留时间 (从云端或本地读取)
+            async function updateAvgStay() {
+                const visits = await fetchCount('stay_visits');
+                const totalSec = await fetchCount('stay_total_seconds');
+                if (visits > 0) {
+                    const avg = Math.round(totalSec / visits);
+                    const m = Math.floor(avg / 60);
+                    const s = avg % 60;
+                    setDisplay('avgStay', m ? `${m}m ${s}s` : `${s}s`);
+                } else {
+                    setDisplay('avgStay', '0s');
+                }
+            }
+        
+            // 页面加载时执行
+            async function initCounts() {
+                // 1. 页面浏览量：先显示旧值，再+1，然后重新拉取
+                const oldPV = await fetchCount('pageviews');
+                setDisplay('totalPageViews', oldPV);
+                await hitCount('pageviews');
+                const newPV = await fetchCount('pageviews');
+                setDisplay('totalPageViews', newPV);
+        
+                // 2. 论文点击次数
+                const paper = await fetchCount('paper_clicks');
+                setDisplay('paperClicks', paper);
+        
+                // 3. 数据集下载次数
+                const download = await fetchCount('dataset_downloads');
+                setDisplay('downloadClicks', download);
+        
+                // 4. 平均停留时间
+                await updateAvgStay();
+            }
+        
+            initCounts();
+        
+            // 记录本次停留时间（页面关闭时发送两个云端计数）
+            const startTime = Date.now();
+            window.addEventListener('beforeunload', () => {
+                const sec = Math.round((Date.now() - startTime) / 1000);
+                if (sec <= 0) return;
+                // 发送 stay_visits +1 和 stay_total_seconds +sec
+                hitCount('stay_visits', 1);
+                hitCount('stay_total_seconds', sec);
             });
         
-            window.trackDownload = function() {
-                if (typeof gtag === 'function') gtag('event', 'dataset_download', { event_category:'Dataset', event_label:'FEOT Download', value:1 });
-                incrementClick('downloadClicks');
-            };
-            window.trackPaperClick = function() {
-                if (typeof gtag === 'function') gtag('event', 'paper_click', { event_category:'Paper', event_label:'CVPR2026 Paper', value:1 });
-                incrementClick('paperClicks');
+            // 点击事件绑定
+            window.trackPaperClick = async function() {
+                if (typeof gtag === 'function') {
+                    gtag('event', 'paper_click', {
+                        event_category: 'Paper',
+                        event_label: 'CVPR2026 Paper',
+                        value: 1
+                    });
+                }
+                const newVal = await hitCount('paper_clicks');
+                setDisplay('paperClicks', newVal);
             };
         
-            window.addEventListener('beforeunload', function() {
-                var sec = Math.round((Date.now() - startTime) / 1000);
-                if (sec < 0) return;
-                try {
-                    var visits = parseInt(localStorage.getItem('stay_visits')||'0') + 1;
-                    var total = parseInt(localStorage.getItem('stay_total_seconds')||'0') + sec;
-                    localStorage.setItem('stay_visits', visits);
-                    localStorage.setItem('stay_total_seconds', total);
-                } catch(e) {}
-            });
-        
-            (function display() {
-                var el = document.getElementById('avgStay');
-                if (!el) return;
-                try {
-                    var v = parseInt(localStorage.getItem('stay_visits')||'0');
-                    var t = parseInt(localStorage.getItem('stay_total_seconds')||'0');
-                    if (v > 0) {
-                        var avg = Math.round(t/v);
-                        var m = Math.floor(avg/60), s = avg%60;
-                        el.textContent = m ? m+'m '+s+'s' : s+'s';
-                    } else el.textContent = '0s';
-                } catch(e) { el.textContent = '0s'; }
-            })();
+            window.trackDownload = async function() {
+                if (typeof gtag === 'function') {
+                    gtag('event', 'dataset_download', {
+                        event_category: 'Dataset',
+                        event_label: 'FEOT Download',
+                        value: 1
+                    });
+                }
+                const newVal = await hitCount('dataset_downloads');
+                setDisplay('downloadClicks', newVal);
+            };
         })();
     </script>
 
