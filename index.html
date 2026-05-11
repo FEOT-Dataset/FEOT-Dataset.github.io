@@ -867,7 +867,7 @@
                 <!-- 卡片5: 数据集下载 -->
                 <div class="analytics-card">
                     <div class="analytics-number" id="downloadClicks">0</div>
-                    <div class="analytics-label">Dataset Downloads</div>
+                    <div class="analytics-label">Dataset Download Clicks</div>
                 </div>
             </div>
         </div>
@@ -907,14 +907,24 @@
             modal.style.display = 'none';
         });
 
-        /* ===== Busuanzi Real Visitor Counter ===== */
-        /* ===== Cloud-based Analytics with CountAPI ===== */
+       /* ===== Busuanzi Real Visitor Counter ===== */
+       /* ===== Cloud-based Analytics with CountAPI ===== */
        /* ===== Vercount 真实访问量 (替代不蒜子) ===== */
-        (function() {
-            var script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://cdn.jsdelivr.net/npm/vercount@latest/dist/vercount.min.js';
-            document.head.appendChild(script);
+       /* ===== Vercount 手动获取真实访问量 (替代不蒜子) ===== */
+        (async function() {
+            const url = encodeURIComponent(window.location.href);
+            const apiUrl = `https://vercount.one/api?url=${url}`;
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                const pv = data.page_pv || 0;
+                const uv = data.page_uv || 0;
+                document.getElementById('vercount_pv').textContent = pv;
+                document.getElementById('vercount_uv').textContent = uv;
+            } catch (e) {
+                document.getElementById('vercount_pv').textContent = 'N/A';
+                document.getElementById('vercount_uv').textContent = 'N/A';
+            }
         })();
         
         /* ===== 本地计算：平均停留时间、论文点击、数据集下载 ===== */
