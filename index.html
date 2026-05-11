@@ -871,7 +871,7 @@
                 <!-- 数据集下载次数 -->
                 <div class="analytics-card">
                     <div class="analytics-number" id="downloadClicks">0</div>
-                    <div class="analytics-label">Dataset Downloads</div>
+                    <div class="analytics-label">Dataset Clicks</div>
                 </div>
             </div>        
         </div>
@@ -916,31 +916,74 @@
        /* ===== Vercount 真实访问量 (替代不蒜子) ===== */
        /* ===== Vercount 手动获取真实访问量 (替代不蒜子) ===== */
         /* ===== Vercount 真实访问量 (脚本注入方式，无 CORS 问题) ===== */
+        /* ===== Vercount 真实访问量 (多CDN容灾 + 本地兜底) ===== */
         (function() {
-            var script = document.createElement('script');
-            script.async = true;
-            // 使用 jsdelivr CDN，国内可访问
-            script.src = 'https://cdn.jsdelivr.net/npm/vercount@latest/dist/vercount.min.js';
-            script.onload = function() {
-                // 脚本加载完成后，Vercount 会自动填充 id 为 vercount_value_page_pv 和 vercount_value_site_uv 的元素
-                console.log('Vercount script loaded, PV/UV updated.');
-            };
-            script.onerror = function() {
-                console.warn('Vercount script failed to load.');
-                // 如果加载失败，显示 err
-                var pv = document.getElementById('vercount_value_page_pv');
-                var uv = document.getElementById('vercount_value_site_uv');
-                if (pv) pv.textContent = 'err';
-                if (uv) uv.textContent = 'err';
-            };
-            document.head.appendChild(script);
+            // 要填充的元素 ID 和本地存储键名
+            const PV_ID = 'vercount_value_page_pv';
+            const UV_ID = 'vercount_value_site_uv';
+            const LOCAL_KEY_PV = 'feot_local_pv';
+            const LOCAL_KEY_UV = 'feot_local_uv';
+        
+            const pvEl = document.getElementById(PV_ID);
+            const uvEl = document.getElementById(UV_ID);
+        
+            // 本地存储的 PV / UV 更新函数
+            function useLocalFallback() {
+                try {
+                    let pv = parseInt(localStorage.getItem(LOCAL_KEY_PV) || '0') + 1;
+                    let uv = parseInt(localStorage.getItem(LOCAL_KEY_UV) || '0') + 1;
+                    localStorage.setItem(LOCAL_KEY_PV, pv);
+                    localStorage.setItem(LOCAL_KEY_UV, uv);
+                    if (pvEl) pvEl.textContent = pv;
+                    if (uvEl) uvEl.textContent = uv;
+                } catch (e) {
+                    if (pvEl) pvEl.textContent = 'N/A';
+                    if (uvEl) uvEl.textContent = 'N/A';
+                }
+            }
+        
+            // 尝试用指定的 CDN 地址加载 Vercount 脚本
+            function tryLoadScript(src, successCallback, failCallback) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = src;
+                script.onload = successCallback;
+                script.onerror = failCallback;
+                document.head.appendChild(script);
+            }
+        
+            // 多个 CDN 源，按优先顺序尝试（优先国内能直接访问的）
+            const cdnSources = [
+                'https://registry.npmmirror.com/vercount/latest/files/dist/vercount.min.js', // 淘宝镜像
+                'https://cdn.jsdelivr.net/npm/vercount@latest/dist/vercount.min.js',         // jsdelivr
+                'https://unpkg.com/vercount@latest/dist/vercount.min.js'                     // unpkg
+            ];
+        
+            function attemptLoad(index) {
+                if (index >= cdnSources.length) {
+                    // 全部 CDN 都失败，启用本地计数（保证页面上一定有个数字）
+                    useLocalFallback();
+                    return;
+                }
+        
+                tryLoadScript(cdnSources[index], function() {
+                    // 脚本加载成功，Vercount 会自动填充 id 对应的元素
+                    console.log('Vercount script loaded from: ' + cdnSources[index]);
+                }, function() {
+                    // 当前地址失败，尝试下一个
+                    console.warn('Failed to load Vercount from: ' + cdnSources[index]);
+                    attemptLoad(index + 1);
+                });
+            }
+        
+            // 开始尝试加载
+            attemptLoad(0);
         })();
         
         /* ===== 本地计算：平均停留时间、论文点击、数据集下载 ===== */
         (function() {
             var startTime = Date.now();
         
-            // 点击计数函数
             function incrementClick(id) {
                 var el = document.getElementById(id);
                 if (el) {
@@ -953,7 +996,6 @@
                 }
             }
         
-            // 页面加载时恢复持久化的点击次数
             ['paperClicks', 'downloadClicks'].forEach(function(id) {
                 try {
                     var saved = localStorage.getItem(id);
@@ -964,7 +1006,6 @@
                 } catch(e) {}
             });
         
-            // 原有的下载跟踪函数（保留并扩展）
             window.trackDownload = function() {
                 if (typeof gtag === 'function') {
                     gtag('event', 'dataset_download', {
@@ -976,7 +1017,6 @@
                 incrementClick('downloadClicks');
             };
         
-            // 原有的论文点击跟踪函数（保留并扩展）
             window.trackPaperClick = function() {
                 if (typeof gtag === 'function') {
                     gtag('event', 'paper_click', {
@@ -988,7 +1028,6 @@
                 incrementClick('paperClicks');
             };
         
-            // 平均停留时间计算（页面关闭时更新）
             window.addEventListener('beforeunload', function() {
                 var durationSec = Math.round((Date.now() - startTime) / 1000);
                 if (durationSec < 0) return;
@@ -1002,7 +1041,6 @@
                 } catch(e) {}
             });
         
-            // 页面加载时显示平均停留时间
             (function displayAvgStay() {
                 try {
                     var visitCount = parseInt(localStorage.getItem('stay_visits') || '0');
