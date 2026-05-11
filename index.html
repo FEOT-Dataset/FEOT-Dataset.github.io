@@ -430,13 +430,19 @@
                       }
     </style>
   
-  <!-- Google Analytics --> 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-045BDDGWY5"></script> 
-  <script> window.dataLayer = window.dataLayer || []; 
-    function gtag(){ dataLayer.push(arguments); } 
-    gtag('js', new Date()); 
-    gtag('config', 'G-045BDDGWY5'); 
-  </script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-045BDDGWY5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        
+        function gtag(){
+            dataLayer.push(arguments);
+        }
+        
+        gtag('js', new Date());
+        
+        gtag('config', 'G-045BDDGWY5');
+    </script>
 </head>
 <body>
     <div class="container">
@@ -789,28 +795,42 @@
         </div>
 
         <!-- 页脚区 (统计访问次数) -->
-        <div class="analytics-panel"> 
-          <div class="analytics-title"> 
-            <i class="fas fa-chart-line"></i> FEOT Dataset Analytics 
-          </div> 
-          <div class="analytics-grid"> 
-            <div class="analytics-card"> 
-              <div class="analytics-number" id="visitCount">0</div> 
-              <div class="analytics-label">Total Visits</div> 
-            </div> 
-            <div class="analytics-card"> 
-              <div class="analytics-number" id="viewerCount">0</div> 
-              <div class="analytics-label">Active Viewers</div> 
-            </div> 
-            <div class="analytics-card"> 
-              <div class="analytics-number" id="stayTime">0s</div> 
-              <div class="analytics-label">Average Stay</div> 
-            </div> 
-            <div class="analytics-card"> 
-              <div class="analytics-number" id="countryInfo">Global</div> 
-              <div class="analytics-label">Visitor Region</div> 
-            </div> 
-          </div>
+        <!-- ===== Visitor Analytics ===== -->
+        <div class="analytics-panel">        
+            <div class="analytics-title">
+                <i class="fas fa-chart-line"></i>
+                FEOT Dataset Analytics
+            </div>
+            <div class="analytics-grid">
+                <!-- 真实访问量 -->
+                <div class="analytics-card">
+                    <div class="analytics-number">
+                        <span id="busuanzi_value_site_pv">0</span>
+                    </div>
+                    <div class="analytics-label">Total Visits</div>
+                </div>        
+                <!-- 实时统计 -->
+                <div class="analytics-card">
+                    <div class="analytics-number">
+                        GA4
+                    </div>
+                    <div class="analytics-label">Professional Analytics</div>
+                </div>        
+                <!-- 停留时间 -->
+                <div class="analytics-card">
+                    <div class="analytics-number" id="stayTime">
+                        0s
+                    </div>
+                    <div class="analytics-label">Average Stay</div>
+                </div>        
+                <!-- 地区轮播 -->
+                <div class="analytics-card">
+                    <div class="analytics-number" id="countryInfo">
+                        Global
+                    </div>
+                    <div class="analytics-label">Visitor Region</div>
+                </div>        
+            </div>        
         </div>
 
         <!-- 页脚区 (更新日期 / 说明) -->
@@ -855,46 +875,57 @@
         });
 
       /* ===== Dataset Download Tracking ===== */ 
-      function trackDownload(){ 
-        gtag('event', 'dataset_download', { 
-          event_category: 'Dataset', event_label: 'FEOT Download', value: 1 
-          }
-        ); 
-      } 
-      /* ===== Paper Click Tracking ===== */ 
-      function trackPaperClick(){ 
-        gtag('event', 'paper_click', { 
-          event_category: 'Paper', event_label: 'CVPR2026 Paper', value: 1 
+        <!-- Busuanzi Real Visitor Counter -->
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        
+        <script>        
+        /* ===== Dataset Download Tracking ===== */
+        
+        function trackDownload(){
+        
+            gtag('event', 'dataset_download', {        
+                event_category: 'Dataset',        
+                event_label: 'FEOT Download',        
+                value: 1        
+            });        
         }
-            ); 
-      } 
-      /* ===== Animated Counter ===== */ 
-      function animateValue(id, start, end, duration){ 
-        let range = end - start; 
-        let current = start; 
-        let increment = end > start ? 1 : -1; 
-        let stepTime = Math.abs( Math.floor(duration / range) ); 
-        let obj = document.getElementById(id); 
-        let timer = setInterval(function(){ 
-          current += increment; 
-          obj.innerHTML = current.toLocaleString(); 
-          if(current == end){ clearInterval(timer); } 
-        }, stepTime); 
-      } 
-      /* ===== Animation Demo ===== */ 
-      animateValue("visitCount", 0, 12842, 2000); 
-      animateValue("viewerCount", 0, 23, 1500); 
-      /* ===== Stay Time Animation ===== */ 
-      let stay = 0; 
-      const stayTimer = setInterval(()=>{ 
-        stay++; 
-        document.getElementById("stayTime").innerHTML = stay + "s"; 
-        if(stay >= 86){ clearInterval(stayTimer); } 
-      },20); 
-      /* ===== Visitor Region Animation ===== */ 
-      const regions = ["China", "USA", "Russia", "France", "UK", "Germany", "Singapore"]; 
-      let idx = 0; 
-      setInterval(()=>{ idx = (idx + 1) % regions.length; document.getElementById("countryInfo").innerHTML = regions[idx]; },2000);
+        
+        /* ===== Paper Click Tracking ===== */        
+        function trackPaperClick(){        
+            gtag('event', 'paper_click', {        
+                event_category: 'Paper',        
+                event_label: 'CVPR2026 Paper',        
+                value: 1        
+            });        
+        }
+        
+        /* ===== Stay Time Animation ===== */        
+        let stay = 0;        
+        const stayTimer = setInterval(()=>{        
+            stay++;        
+            document.getElementById("stayTime").innerHTML =
+                stay + "s";        
+            if(stay >= 86){
+                clearInterval(stayTimer);
+            }        
+        },20);
+        
+        /* ===== Visitor Regions ===== */        
+        const regions = [
+            "China",
+            "USA",
+            "Russia",
+            "UK",
+            "France"
+        ];        
+        let idx = 0;        
+        setInterval(()=>{        
+            idx = (idx + 1) % regions.length;        
+            document.getElementById("countryInfo").innerHTML =
+                regions[idx];        
+        },2000);        
+        </script>
+
     </script>
 
 </body>
