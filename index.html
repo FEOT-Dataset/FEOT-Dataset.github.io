@@ -910,7 +910,8 @@
         /* ===== Cloudflare Worker 云端计数器 (全部指标) ===== */
         /* ===== Cloudflare Worker 云端计数器 (全部指标) ===== */
         (function() {
-            const API_BASE = 'https://feot-counter.donghao0109.workers.dev';
+            // const API_BASE = 'https://feot-counter.donghao0109.workers.dev';    // 基于Cloudflare worker，指向*.workers.dev
+            const API_BASE = '/api';                                                // 基于Cloudflare pages，指向*.pages.dev
             const LOCAL_KEYS = {
                 pageviews: 'feot_local_pv',
                 paper_clicks: 'feot_local_paper',
