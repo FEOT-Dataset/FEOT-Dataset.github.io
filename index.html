@@ -913,9 +913,7 @@
         (function() {
             // 如果当前域名是 pages.dev，则使用相对 /api 路径
             // 否则，直接通过 Cloudflare 的 Pages 域名访问 API
-            const API_BASE = window.location.hostname.endsWith('.pages.dev') 
-                ? '/api' 
-                : 'https://feot-dataset-github-io.pages.dev/';
+            const API_BASE = '/api';
         
             const LOCAL_KEYS = {
                 pageviews: 'feot_local_pv',
