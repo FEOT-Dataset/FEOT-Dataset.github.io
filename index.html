@@ -486,6 +486,13 @@
         
         gtag('config', 'G-045BDDGWY5');
     </script>
+
+    <!-- 从 github.io 自动跳转到 pages.dev -->
+    <script>
+      if (window.location.hostname === 'feot-dataset.github.io') {
+        window.location.replace('https://feot-dataset-github-io.pages.dev' + window.location.pathname + window.location.search);
+      }
+    </script>
 </head>
 <body>
     <div class="container">
