@@ -909,9 +909,14 @@
         /* ===== Vercount 真实访问量 (多CDN容灾 + 本地兜底) ===== */
         /* ===== Cloudflare Worker 云端计数器 (全部指标) ===== */
         /* ===== Cloudflare Worker 云端计数器 (全部指标) ===== */
+       /* ===== Cloudflare 云端计数器 (环境自动适配版) ===== */
         (function() {
-            // const API_BASE = 'https://feot-counter.donghao0109.workers.dev';    // 基于Cloudflare worker，指向*.workers.dev
-            const API_BASE = '/api';                                                // 基于Cloudflare pages，指向*.pages.dev
+            // 如果当前域名是 pages.dev，则使用相对 /api 路径
+            // 否则，直接通过 Cloudflare 的 Pages 域名访问 API
+            const API_BASE = window.location.hostname.endsWith('.pages.dev') 
+                ? '/api' 
+                : 'https://feot-dataset-github-io.pages.dev/';
+        
             const LOCAL_KEYS = {
                 pageviews: 'feot_local_pv',
                 paper_clicks: 'feot_local_paper',
@@ -951,7 +956,6 @@
                 if (el) el.textContent = value;
             }
         
-            // 计算并显示平均停留时间 (从云端或本地读取)
             async function updateAvgStay() {
                 const visits = await fetchCount('stay_visits');
                 const totalSec = await fetchCount('stay_total_seconds');
@@ -965,9 +969,8 @@
                 }
             }
         
-            // 页面加载时执行
             async function initCounts() {
-                // 1. 页面浏览量：先显示旧值，再+1，然后重新拉取
+                // 1. 页面浏览量
                 const oldPV = await fetchCount('pageviews');
                 setDisplay('totalPageViews', oldPV);
                 await hitCount('pageviews');
@@ -988,17 +991,14 @@
         
             initCounts();
         
-            // 记录本次停留时间（页面关闭时发送两个云端计数）
             const startTime = Date.now();
             window.addEventListener('beforeunload', () => {
                 const sec = Math.round((Date.now() - startTime) / 1000);
                 if (sec <= 0) return;
-                // 发送 stay_visits +1 和 stay_total_seconds +sec
                 hitCount('stay_visits', 1);
                 hitCount('stay_total_seconds', sec);
             });
         
-            // 点击事件绑定
             window.trackPaperClick = async function() {
                 if (typeof gtag === 'function') {
                     gtag('event', 'paper_click', {
